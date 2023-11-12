@@ -2,7 +2,6 @@
 
 
 #include "UEFPSLevelUp/Public/ShooterCharacter.h"
-#include "EnhancedInputSubsystems.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
@@ -78,7 +77,7 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent -> BindAxis("LookUp" , this , &APawn::AddControllerPitchInput);
 
 	PlayerInputComponent -> BindAction("Jump" , IE_Pressed , this , & ACharacter::Jump);	PlayerInputComponent -> BindAction("Jump" , IE_Pressed , this , & ACharacter::Jump);
-	PlayerInputComponent -> BindAction("Jump" , IE_Released , this , & ACharacter::Jump);
+	PlayerInputComponent -> BindAction("Jump" , IE_Released , this , & ACharacter::StopJumping);
 
 }
 
