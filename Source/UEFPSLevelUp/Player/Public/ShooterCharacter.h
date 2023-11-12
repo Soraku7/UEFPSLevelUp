@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "InputAction.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "ShooterCharacter.generated.h"
@@ -43,15 +42,15 @@ public:
 
 	void LookUpAtRate(float Rate);
 private:
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Camera , meta = (AllowPrivateAccess = "True"))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Camera , meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
 	
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Camera , meta = (AllowPrivateAccess = "True"))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Camera , meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
 
-	UPROPERTY(VisibleAnywhere ,	BlueprintReadOnly , Category = Camera , meta = (AllowPrivateAccess = "True"))
+	UPROPERTY(VisibleAnywhere ,	BlueprintReadOnly , Category = Camera , meta = (AllowPrivateAccess = "true"))
 	float BaseTurnRate;
 
-	UPROPERTY(VisibleAnywhere ,	BlueprintReadOnly , Category = Camera , meta = (AllowPrivateAccess = "True"))
+	UPROPERTY(VisibleAnywhere ,	BlueprintReadOnly , Category = Camera , meta = (AllowPrivateAccess = "true"))
 	float BaseLookUpRate;
 };
