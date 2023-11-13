@@ -53,11 +53,7 @@ public:
 
 	void FireWeapon();
 
-	UPROPERTY(EditAnywhere , BlueprintReadWrite , Category = Combat , meta = (AllowAbstract = "true"))
-	USoundCue* FireSound;
-
-	UPROPERTY(EditAnywhere , BlueprintReadWrite , Category = Combat , meta = (AllowPrivateAccess = "true"))
-	UParticleSystem* MuzzleFlash;
+	
 private:
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Camera , meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
@@ -70,6 +66,12 @@ private:
 
 	UPROPERTY(VisibleAnywhere ,	BlueprintReadOnly , Category = Camera , meta = (AllowPrivateAccess = "true"))
 	float BaseLookUpRate;
-
 	
+	UPROPERTY(EditAnywhere , BlueprintReadWrite , Category = Combat , meta = (AllowPrivateAccess = "true"))
+	USoundCue* FireSound;
+
+	UPROPERTY(EditAnywhere , BlueprintReadWrite , Category = Combat , meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* MuzzleFlash;
+	UPROPERTY(EditAnywhere , BlueprintReadWrite , Category = Combat , meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* HipFireMontage;
 };
