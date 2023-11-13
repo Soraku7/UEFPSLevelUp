@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "ShooterCharacter.generated.h"
 
+class USoundCue;
 class UCameraComponent;
 class USpringArmComponent;
 class UInputMappingContext;
@@ -38,9 +39,22 @@ public:
 
 	FORCEINLINE UCameraComponent* GetFollowCamera() const {return FollowCamera;}
 	
+	/**
+	 * 左右旋转
+	 * @param Rate 旋转速度
+	 */
 	void TurnAtRate(float Rate);
 
+	/**
+	 * 上下旋转
+	 * @param Rate 旋转速度
+	 */
 	void LookUpAtRate(float Rate);
+
+	void FireWeapon();
+
+	UPROPERTY(EditAnywhere , BlueprintReadWrite , Category = Combat , meta = (AllowAbstract = "true"))
+	USoundCue* FireSound;
 private:
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Camera , meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
@@ -53,4 +67,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere ,	BlueprintReadOnly , Category = Camera , meta = (AllowPrivateAccess = "true"))
 	float BaseLookUpRate;
+
+	
 };

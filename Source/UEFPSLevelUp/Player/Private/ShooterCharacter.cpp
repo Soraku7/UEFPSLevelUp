@@ -3,7 +3,10 @@
 
 #include "UEFPSLevelUp/Player/Public/ShooterCharacter.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
 
 
 // Sets default values
@@ -22,6 +25,18 @@ AShooterCharacter::AShooterCharacter():
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera -> SetupAttachment(CameraBoom , USpringArmComponent::SocketName);
 	FollowCamera -> bUsePawnControlRotation = false;
+
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationRoll = false;
+	bUseControllerRotationYaw = false;
+
+	//玩家沿加速度方向旋转
+	GetCharacterMovement() -> bOrientRotationToMovement = true;
+	GetCharacterMovement() -> RotationRate = FRotator(0.f , 540.0f , 0.f);
+
+	GetCharacterMovement() -> JumpZVelocity = 600.f;
+	//角色掉落时的左右速度控制能力
+	GetCharacterMovement() -> AirControl = 0.2f;
 }
 
 // Called when the game starts or when spawned
@@ -79,6 +94,7 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent -> BindAction("Jump" , IE_Pressed , this , & ACharacter::Jump);	PlayerInputComponent -> BindAction("Jump" , IE_Pressed , this , & ACharacter::Jump);
 	PlayerInputComponent -> BindAction("Jump" , IE_Released , this , & ACharacter::StopJumping);
 
+	PlayerInputComponent -> BindAction("FireButton" , IE_Pressed , this , &AShooterCharacter::FireWeapon);
 }
 
 void AShooterCharacter::TurnAtRate(float Rate)
@@ -89,5 +105,14 @@ void AShooterCharacter::TurnAtRate(float Rate)
 void AShooterCharacter::LookUpAtRate(float Rate)
 {
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld() -> GetDeltaSeconds());
+}
+
+void AShooterCharacter::FireWeapon()
+{
+	UE_LOG(LogTemp , Warning , TEXT("Fire"));
+	if(FireSound)
+	{
+		UGameplayStatics::PlaySound2D(this , FireSound);
+	}
 }
 
