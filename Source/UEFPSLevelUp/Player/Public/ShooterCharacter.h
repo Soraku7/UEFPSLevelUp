@@ -74,4 +74,9 @@ private:
 	UParticleSystem* MuzzleFlash;
 	UPROPERTY(EditAnywhere , BlueprintReadWrite , Category = Combat , meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* HipFireMontage;
+	UPROPERTY(EditAnywhere , BlueprintReadWrite , Category = Combat , meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* ImpactParticle;
+	UPROPERTY(EditAnywhere , BlueprintReadWrite , Category = Combat , meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* BeamParticles;
+	
 };

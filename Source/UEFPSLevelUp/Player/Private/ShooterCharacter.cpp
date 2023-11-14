@@ -7,6 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
 
 
@@ -22,17 +23,18 @@ AShooterCharacter::AShooterCharacter():
 	CameraBoom -> SetupAttachment(RootComponent);
 	CameraBoom -> TargetArmLength = 300.0f;
 	CameraBoom -> bUsePawnControlRotation = true;
+	CameraBoom -> SocketOffset = FVector(0.f , 50.f , 50.f);
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera -> SetupAttachment(CameraBoom , USpringArmComponent::SocketName);
 	FollowCamera -> bUsePawnControlRotation = false;
 
 	bUseControllerRotationPitch = false;
-	bUseControllerRotationRoll = false;
+	bUseControllerRotationRoll = true;
 	bUseControllerRotationYaw = false;
 
 	//玩家沿加速度方向旋转
-	GetCharacterMovement() -> bOrientRotationToMovement = true;
+	GetCharacterMovement() -> bOrientRotationToMovement = false;
 	GetCharacterMovement() -> RotationRate = FRotator(0.f , 540.0f , 0.f);
 
 	GetCharacterMovement() -> JumpZVelocity = 600.f;
@@ -123,6 +125,35 @@ void AShooterCharacter::FireWeapon()
 		{
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld() , MuzzleFlash , SocketTransform);
 		}
+		FHitResult FireHit;
+		const FVector Start{SocketTransform.GetLocation()};
+		const FQuat Rotation{SocketTransform.GetRotation()};
+		const FVector RotationAxis{Rotation.GetAxisX()};
+		const FVector End{Start + RotationAxis * 5000.f};
+		
+		FVector BeamEndPoint{End};
+		
+		GetWorld() -> LineTraceSingleByChannel(FireHit , Start , End , ECC_Visibility);
+		if(FireHit.bBlockingHit)
+		{
+			BeamEndPoint = FireHit.Location;
+			if(ImpactParticle)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld() , ImpactParticle ,FireHit.Location);
+			}
+		}
+
+		if(BeamParticles)
+		{
+			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(GetWorld() , BeamParticles , SocketTransform);
+
+			if(Beam)
+			{
+				Beam -> SetVectorParameter(FName("Target") , BeamEndPoint);
+			}
+
+		}
+
 	}
 
 	UAnimInstance* AnimInstance = GetMesh() -> GetAnimInstance();
