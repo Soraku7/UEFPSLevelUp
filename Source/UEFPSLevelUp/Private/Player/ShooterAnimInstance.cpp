@@ -4,6 +4,7 @@
 #include "Player/ShooterAnimInstance.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "UEFPSLevelUp/Player/Public/ShooterCharacter.h"
 
 void UShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
@@ -28,6 +29,20 @@ void UShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
 		else
 		{
 			bIsAccelerating = false;
+		}
+
+		//玩家控制器方向
+		FRotator AnimRotation = ShooterCharacter -> GetBaseAimRotation();
+		FString RotationMessage = FString::Printf(TEXT("Base Anim Rotation: %f") , MovementOffset);
+
+		//获取移动方向与x轴的旋转角
+		FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(ShooterCharacter -> GetVelocity());
+		MovementOffset = UKismetMathLibrary::NormalizedDeltaRotator(
+			MovementRotation , AnimRotation).Yaw;
+		
+		if(GEngine)
+		{
+			GEngine -> AddOnScreenDebugMessage(1 , 0.f , FColor::White , RotationMessage);
 		}
 	}
 }
