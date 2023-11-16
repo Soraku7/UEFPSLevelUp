@@ -53,7 +53,7 @@ public:
 
 	void FireWeapon();
 
-	
+	bool GetBeamEndLocation(const FVector& MuzzleSocketLocation , FVector& OutBeamLocation);
 private:
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Camera , meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
