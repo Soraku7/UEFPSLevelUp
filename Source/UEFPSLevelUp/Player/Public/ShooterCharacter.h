@@ -27,18 +27,10 @@ protected:
 	void MoveForward(float value);
 
 	void MoveRight(float value);
-	
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	
-	FORCEINLINE USpringArmComponent* GetCameraBoom() const{return CameraBoom;}
+	void AimingButtonPressed();
+	void AimingButtonReleased();
 
-	FORCEINLINE UCameraComponent* GetFollowCamera() const {return FollowCamera;}
-	
 	/**
 	 * 左右旋转
 	 * @param Rate 旋转速度
@@ -54,6 +46,22 @@ public:
 	void FireWeapon();
 
 	bool GetBeamEndLocation(const FVector& MuzzleSocketLocation , FVector& OutBeamLocation);
+
+	void CameraInterpZoom(float DeltaTime);
+	
+public:
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	// Called to bind functionality to input
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	
+	FORCEINLINE USpringArmComponent* GetCameraBoom() const{return CameraBoom;}
+
+	FORCEINLINE UCameraComponent* GetFollowCamera() const {return FollowCamera;}
+
+	FORCEINLINE bool GetAiming() const {return bAiming;}
+
 private:
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Camera , meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
@@ -78,5 +86,25 @@ private:
 	UParticleSystem* ImpactParticle;
 	UPROPERTY(EditAnywhere , BlueprintReadWrite , Category = Combat , meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* BeamParticles;
-	
+
+	/**
+	 * 是否瞄准
+	 */
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly ,	Category = combat , meta = (AllowPrivateAccess = "true"))
+	bool bAiming;
+
+	/**
+	 * 相机常规视野值
+	 */
+	float CameraDefaultFOV;
+
+	/**
+	 * 放大后的相机视野值
+	 */
+	float CameraZoomedFOV;
+
+	float CameraCurrentFOV;
+
+	UPROPERTY(EditAnywhere , BlueprintReadWrite , Category = combat , meta = (AllowPrivateAccess = "true"))
+	float ZoomInterpSpeed;
 };

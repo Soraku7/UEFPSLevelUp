@@ -7,6 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Math/UnitConversion.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
 
@@ -14,16 +15,21 @@
 // Sets default values
 AShooterCharacter::AShooterCharacter():
 	BaseTurnRate(45.f),
-	BaseLookUpRate(45.f)
+	BaseLookUpRate(45.f),
+	bAiming(false),
+	CameraDefaultFOV(0.f),
+	CameraZoomedFOV(60.f),
+	CameraCurrentFOV(0.f),
+	ZoomInterpSpeed(20.f)
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom -> SetupAttachment(RootComponent);
-	CameraBoom -> TargetArmLength = 300.0f;
+	CameraBoom -> TargetArmLength = 180.0f;
 	CameraBoom -> bUsePawnControlRotation = true;
-	CameraBoom -> SocketOffset = FVector(0.f , 50.f , 50.f);
+	CameraBoom -> SocketOffset = FVector(0.f , 50.f , 70.f);
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera -> SetupAttachment(CameraBoom , USpringArmComponent::SocketName);
@@ -46,6 +52,11 @@ AShooterCharacter::AShooterCharacter():
 void AShooterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	if(FollowCamera)
+	{
+		CameraDefaultFOV = GetFollowCamera() -> FieldOfView;
+		CameraCurrentFOV = CameraDefaultFOV;
+	}
 }
 
 void AShooterCharacter::MoveForward(float value)
@@ -74,10 +85,24 @@ void AShooterCharacter::MoveRight(float value)
 	}
 }
 
+void AShooterCharacter::AimingButtonPressed()
+{
+	bAiming = true;
+	GetFollowCamera() -> SetFieldOfView(CameraZoomedFOV);
+}
+
+void AShooterCharacter::AimingButtonReleased()
+{
+	bAiming = false;
+	GetFollowCamera() -> SetFieldOfView(CameraDefaultFOV);
+}
+
 // Called every frame
 void AShooterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	CameraInterpZoom(DeltaTime);
 }
 
 // Called to bind functionality to input
@@ -98,6 +123,10 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent -> BindAction("Jump" , IE_Released , this , & ACharacter::StopJumping);
 
 	PlayerInputComponent -> BindAction("FireButton" , IE_Pressed , this , &AShooterCharacter::FireWeapon);
+
+	PlayerInputComponent -> BindAction("AimingButton" , IE_Pressed , this , &AShooterCharacter::AimingButtonPressed);
+	PlayerInputComponent -> BindAction("AimingButton" , IE_Released , this , &AShooterCharacter::AimingButtonReleased);
+
 }
 
 void AShooterCharacter::TurnAtRate(float Rate)
@@ -204,5 +233,18 @@ bool AShooterCharacter::GetBeamEndLocation(
 	}
 
 	return false;
+}
+
+void AShooterCharacter::CameraInterpZoom(float DeltaTime)
+{
+	if(bAiming)
+	{
+		CameraCurrentFOV = FMath::FInterpTo(CameraCurrentFOV , CameraZoomedFOV , DeltaTime , ZoomInterpSpeed);
+	}
+	else
+	{
+		CameraCurrentFOV = FMath::FInterpTo(CameraCurrentFOV , CameraDefaultFOV , DeltaTime , ZoomInterpSpeed);
+	}
+	GetFollowCamera() -> SetFieldOfView(CameraCurrentFOV);
 }
 
