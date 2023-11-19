@@ -17,10 +17,21 @@ AShooterCharacter::AShooterCharacter():
 	BaseTurnRate(45.f),
 	BaseLookUpRate(45.f),
 	bAiming(false),
+//相机
 	CameraDefaultFOV(0.f),
 	CameraZoomedFOV(60.f),
 	CameraCurrentFOV(0.f),
-	ZoomInterpSpeed(20.f)
+	ZoomInterpSpeed(20.f),
+//开镜关镜上下左右移动速度
+	HipTurnRate(90.f),
+	HipLookUpRate(90.f),
+	AimingTurnRate(20.f),
+	AimingLookUpRate(20.f),
+//开镜关镜鼠标移动速度
+	MouseHipTurnRate(1.0f),
+	MouseHipLookUpRate(1.0f),
+	MouseAimingTurnRate(1.0f),
+	MouseAimingLookUpRate(1.0f)
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -103,6 +114,19 @@ void AShooterCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	CameraInterpZoom(DeltaTime);
+
+	if(bAiming)
+	{
+		BaseTurnRate = AimingTurnRate;
+		BaseLookUpRate = AimingLookUpRate;
+	}
+	else
+	{
+		BaseTurnRate = HipTurnRate;
+		BaseLookUpRate = HipLookUpRate;
+	}
+
+	CalculateCrosshairSpread(DeltaTime);
 }
 
 // Called to bind functionality to input
@@ -116,8 +140,8 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent -> BindAxis("MoveRight" , this , &AShooterCharacter::MoveRight);
 	PlayerInputComponent -> BindAxis("TurnRate" , this , &AShooterCharacter::TurnAtRate);
 	PlayerInputComponent -> BindAxis("LookUpRate" , this , &AShooterCharacter::LookUpAtRate);
-	PlayerInputComponent -> BindAxis("Turn" , this , &APawn::AddControllerYawInput);
-	PlayerInputComponent -> BindAxis("LookUp" , this , &APawn::AddControllerPitchInput);
+	PlayerInputComponent -> BindAxis("Turn" , this , &AShooterCharacter::Turn);
+	PlayerInputComponent -> BindAxis("LookUp" , this , &AShooterCharacter::LookUp);
 
 	PlayerInputComponent -> BindAction("Jump" , IE_Pressed , this , & ACharacter::Jump);	PlayerInputComponent -> BindAction("Jump" , IE_Pressed , this , & ACharacter::Jump);
 	PlayerInputComponent -> BindAction("Jump" , IE_Released , this , & ACharacter::StopJumping);
@@ -127,6 +151,11 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent -> BindAction("AimingButton" , IE_Pressed , this , &AShooterCharacter::AimingButtonPressed);
 	PlayerInputComponent -> BindAction("AimingButton" , IE_Released , this , &AShooterCharacter::AimingButtonReleased);
 
+}
+
+float AShooterCharacter::GetCrosshairSpreadMultiplier() const
+{
+	return CrosshairSpreadMultiplier;
 }
 
 void AShooterCharacter::TurnAtRate(float Rate)
@@ -246,5 +275,40 @@ void AShooterCharacter::CameraInterpZoom(float DeltaTime)
 		CameraCurrentFOV = FMath::FInterpTo(CameraCurrentFOV , CameraDefaultFOV , DeltaTime , ZoomInterpSpeed);
 	}
 	GetFollowCamera() -> SetFieldOfView(CameraCurrentFOV);
+}
+
+void AShooterCharacter::Turn(float Rate)
+{
+	float TurnScaleFactor;
+	if(bAiming)
+		TurnScaleFactor = MouseAimingTurnRate;
+	else
+		TurnScaleFactor = MouseHipTurnRate;
+
+	AddControllerYawInput(Rate * TurnScaleFactor);
+}
+
+void AShooterCharacter::LookUp(float Rate)
+{
+	float TurnScaleFactor;
+	if(bAiming)
+		TurnScaleFactor = MouseAimingLookUpRate;
+	else
+		TurnScaleFactor = MouseHipLookUpRate;
+
+	AddControllerPitchInput(Rate * TurnScaleFactor);
+}
+
+void AShooterCharacter::CalculateCrosshairSpread(float DeltaTime)
+{
+	FVector2D WalkSpeedRange{0.0 , 600.f};
+	FVector2D VelocityMultiplierRange{0.f , 1.f};
+	FVector Velocity{GetVelocity()};
+	Velocity.Z = 0;
+
+	CrosshairVelocityFactor = FMath::GetMappedRangeValueClamped(WalkSpeedRange
+		, VelocityMultiplierRange , Velocity.Size());
+	
+	CrosshairSpreadMultiplier = 0.5f + CrosshairVelocityFactor;
 }
 
