@@ -7,7 +7,6 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Math/UnitConversion.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
 
@@ -40,7 +39,11 @@ AShooterCharacter::AShooterCharacter():
 	CrosshairShootingFactor(0.f),
 //子弹射击时间变量
 	ShootTimeDuration(0.05f),
-	bFiringBullet(false)
+	bFiringBullet(false),
+//枪的射击间隔
+	AutomaticFireRate(0.1f),
+	bShouldFire(true),
+	bFireButtonPress(false)
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -123,17 +126,7 @@ void AShooterCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	CameraInterpZoom(DeltaTime);
-
-	if(bAiming)
-	{
-		BaseTurnRate = AimingTurnRate;
-		BaseLookUpRate = AimingLookUpRate;
-	}
-	else
-	{
-		BaseTurnRate = HipTurnRate;
-		BaseLookUpRate = HipLookUpRate;
-	}
+	SetLookRate();
 
 	CalculateCrosshairSpread(DeltaTime);
 }
@@ -155,7 +148,9 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent -> BindAction("Jump" , IE_Pressed , this , & ACharacter::Jump);
 	PlayerInputComponent -> BindAction("Jump" , IE_Released , this , & ACharacter::StopJumping);
 
-	PlayerInputComponent -> BindAction("FireButton" , IE_Pressed , this , &AShooterCharacter::FireWeapon);
+	PlayerInputComponent -> BindAction("FireButton" , IE_Pressed , this , &AShooterCharacter::FireButtonPressed);
+	PlayerInputComponent -> BindAction("FireButton" , IE_Released , this , &AShooterCharacter::FireButtonReleased);
+
 
 	PlayerInputComponent -> BindAction("AimingButton" , IE_Pressed , this , &AShooterCharacter::AimingButtonPressed);
 	PlayerInputComponent -> BindAction("AimingButton" , IE_Released , this , &AShooterCharacter::AimingButtonReleased);
@@ -286,6 +281,21 @@ void AShooterCharacter::CameraInterpZoom(float DeltaTime)
 	GetFollowCamera() -> SetFieldOfView(CameraCurrentFOV);
 }
 
+void AShooterCharacter::SetLookRate()
+{
+	if (bAiming)
+	{
+		BaseTurnRate = AimingTurnRate;
+		BaseLookUpRate = AimingLookUpRate;
+	}
+	else
+	{
+		BaseTurnRate = HipTurnRate;
+		BaseLookUpRate = HipLookUpRate;
+	}
+
+}
+
 void AShooterCharacter::Turn(float Rate)
 {
 	float TurnScaleFactor;
@@ -355,5 +365,36 @@ void AShooterCharacter::StartCrosshairBulletFire()
 void AShooterCharacter::FinishCrosshairBulletFire()
 {
 	bFiringBullet = false;
+}
+
+void AShooterCharacter::FireButtonPressed()
+{
+	bFireButtonPress = true;
+	StartFireTimer();
+}
+
+void AShooterCharacter::FireButtonReleased()
+{
+	bFireButtonPress = false;
+}
+
+void AShooterCharacter::StartFireTimer()
+{
+	if(bShouldFire)
+	{
+		FireWeapon();
+		bShouldFire = false;
+		GetWorldTimerManager().SetTimer(AutoFireTimer , this 
+			, &AShooterCharacter::AutoFireReset , AutomaticFireRate);
+	}
+}
+
+void AShooterCharacter::AutoFireReset()
+{
+	bShouldFire = true;
+	if(bFireButtonPress)
+	{
+		StartFireTimer();
+	}
 }
 
