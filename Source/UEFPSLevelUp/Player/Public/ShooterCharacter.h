@@ -70,6 +70,12 @@ protected:
 
 	UFUNCTION()
 	void AutoFireReset();
+
+	
+	/**
+	 * 射线检索拾取物体
+	 */
+	bool TraceUnderCrosshair(FHitResult& OutHitResult , FVector& OutHitLocation);
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

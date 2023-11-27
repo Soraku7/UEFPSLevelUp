@@ -3,12 +3,14 @@
 
 #include "UEFPSLevelUp/Player/Public/ShooterCharacter.h"
 #include "Camera/CameraComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
+#include "UEFPSLevelUp/Item/Public/Item.h"
 
 
 // Sets default values
@@ -129,6 +131,18 @@ void AShooterCharacter::Tick(float DeltaTime)
 	SetLookRate();
 
 	CalculateCrosshairSpread(DeltaTime);
+
+	FHitResult ItemTraceResult;
+	FVector HitLocation;
+	TraceUnderCrosshair(ItemTraceResult , HitLocation);
+	if(ItemTraceResult.bBlockingHit)
+	{
+		AItem* HitItem = Cast<AItem>(ItemTraceResult.GetActor());
+		if(HitItem && HitItem -> GetPickupWidget())
+		{
+			HitItem -> GetPickupWidget() -> SetVisibility(true);
+		}
+	}
 }
 
 // Called to bind functionality to input
@@ -225,47 +239,32 @@ void AShooterCharacter::FireWeapon()
 bool AShooterCharacter::GetBeamEndLocation(
 	const FVector& MuzzleSocketLocation, FVector& OutBeamLocation)
 {
-	//获得当前屏幕坐标
-	FVector2D ViewportSize;
-	if(GEngine && GEngine -> GameViewport)
+	//屏幕中线发出射线
+	FHitResult CrosshairHitResult;
+	bool bCrosshairHit = TraceUnderCrosshair(CrosshairHitResult , OutBeamLocation);
+
+	if(bCrosshairHit)
 	{
-		GEngine -> GameViewport -> GetViewportSize(ViewportSize);
+		OutBeamLocation = CrosshairHitResult.Location;
 	}
-	FVector2D CrosshairLocation(ViewportSize.X / 2.f , ViewportSize.Y / 2.f);
-	FVector CrosshairWorldPosition;
-	FVector CrosshairWorldDirection;
-
-	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(this , 0)
-			, CrosshairLocation
-			, CrosshairWorldPosition
-			, CrosshairWorldDirection);
-
-	if(bScreenToWorld)
+	else
 	{
-		FHitResult ScreenTraceHit;
-		const FVector Start {CrosshairWorldPosition};
-		const FVector End{ CrosshairWorldPosition + CrosshairWorldDirection * 50000.f};
-		
-		OutBeamLocation = End;
-		GetWorld() -> LineTraceSingleByChannel(ScreenTraceHit , Start , End , ECC_Visibility);
-		if(ScreenTraceHit.bBlockingHit)
-		{
-			OutBeamLocation = ScreenTraceHit.Location;
-		}
-
-		FHitResult WeaponTraceHit;
-		const FVector WeaponTraceStart{MuzzleSocketLocation};
-		const FVector WeaponTraceEnd{OutBeamLocation};
-		GetWorld() -> LineTraceSingleByChannel(WeaponTraceHit , WeaponTraceStart , WeaponTraceEnd , ECC_Visibility);
-		if(WeaponTraceHit.bBlockingHit)
-		{
-			OutBeamLocation = WeaponTraceHit.Location;
-		}
-
+		//屏幕中心未能检测到目标
+	}
+	//枪口发出射线
+	FHitResult WeaponTraceHit;
+	const FVector WeaponTraceStart{MuzzleSocketLocation};
+	const FVector StartToEnd{OutBeamLocation - MuzzleSocketLocation};
+	const FVector WeaponTraceEnd{OutBeamLocation + StartToEnd * 1.25f};
+	GetWorld() -> LineTraceSingleByChannel(WeaponTraceHit , WeaponTraceStart , WeaponTraceEnd , ECC_Visibility);
+	if(WeaponTraceHit.bBlockingHit)
+	{
+		OutBeamLocation = WeaponTraceHit.Location;
 		return true;
 	}
-
 	return false;
+	
+	
 }
 
 void AShooterCharacter::CameraInterpZoom(float DeltaTime)
@@ -398,3 +397,33 @@ void AShooterCharacter::AutoFireReset()
 	}
 }
 
+bool AShooterCharacter::TraceUnderCrosshair(FHitResult& OutHitResult , FVector& OutHitLocation)
+{
+	FVector2D ViewportSize;
+	if(GEngine && GEngine -> GameViewport)
+	{
+		GEngine -> GameViewport -> GetViewportSize(ViewportSize);
+	}
+
+	FVector2D CrosshairLocation(ViewportSize.X / 2.f , ViewportSize.Y / 2.f);
+	FVector CrosshairWorldPosition;
+	FVector CrosshairWorldDirection;
+
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(
+		UGameplayStatics::GetPlayerController(this , 0),
+		CrosshairLocation , CrosshairWorldPosition , CrosshairWorldDirection);
+
+	if(bScreenToWorld)
+	{
+		const FVector Start{CrosshairWorldPosition};
+		const FVector End{Start + CrosshairWorldDirection * 50000.f};
+		OutHitLocation = End;
+		GetWorld() -> LineTraceSingleByChannel(OutHitResult , Start , End , ECC_Visibility);
+		if(OutHitResult.bBlockingHit)
+		{
+			OutHitLocation = OutHitResult.Location;
+			return true;
+		}
+	}
+	return false;
+}

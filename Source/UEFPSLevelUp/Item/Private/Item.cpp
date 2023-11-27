@@ -4,6 +4,7 @@
 #include "UEFPSLevelUp/Item/Public/Item.h"
 
 #include "Components/BoxComponent.h"
+#include "Components/WidgetComponent.h"
 
 
 // Sets default values
@@ -17,13 +18,19 @@ AItem::AItem()
 
 	CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
 	CollisionBox->SetupAttachment(ItemMesh);
+	CollisionBox -> SetCollisionResponseToAllChannels(ECR_Ignore);
+	CollisionBox -> SetCollisionResponseToChannel(ECC_Visibility , ECR_Block);
+
+	PickupWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("PickupWidget"));
+	PickupWidget -> SetupAttachment(GetRootComponent());
 }
 
 // Called when the game starts or when spawned
 void AItem::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	PickupWidget->SetVisibility(false);
 }
 
 // Called every frame

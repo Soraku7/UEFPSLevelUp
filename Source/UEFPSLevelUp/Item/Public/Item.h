@@ -35,4 +35,8 @@ private:
 
 	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = "Item Properties" , meta = (AllowPrivateAccess = "true"))
 	UWidgetComponent* PickupWidget;
+
+public:
+	FORCEINLINE UWidgetComponent* GetPickupWidget() const {return PickupWidget;};
+
 };
