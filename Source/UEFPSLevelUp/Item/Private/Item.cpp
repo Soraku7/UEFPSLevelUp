@@ -4,7 +4,9 @@
 #include "UEFPSLevelUp/Item/Public/Item.h"
 
 #include "Components/BoxComponent.h"
+#include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
+#include "UEFPSLevelUp/Player/Public/ShooterCharacter.h"
 
 
 // Sets default values
@@ -23,6 +25,9 @@ AItem::AItem()
 
 	PickupWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("PickupWidget"));
 	PickupWidget -> SetupAttachment(GetRootComponent());
+
+	AreaSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AreaSphere"));
+	AreaSphere -> SetupAttachment(GetRootComponent());
 }
 
 // Called when the game starts or when spawned
@@ -31,7 +36,37 @@ void AItem::BeginPlay()
 	Super::BeginPlay();
 
 	PickupWidget->SetVisibility(false);
+
+	AreaSphere -> OnComponentBeginOverlap.AddDynamic(this , &AItem::OnSphereOverlap);
+	AreaSphere -> OnComponentEndOverlap.AddDynamic(this , &AItem::AItem::OnSphereEndOverlap);
 }
+
+void AItem::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if(OtherActor)
+	{
+		AShooterCharacter* ShooterCharacter = Cast<AShooterCharacter>(OtherActor);
+		if(ShooterCharacter)
+		{
+			ShooterCharacter -> IncrementOverlappedItemCount(1);
+		}
+	}
+}
+
+void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if(OtherActor)
+	{
+		AShooterCharacter* ShooterCharacter = Cast<AShooterCharacter>(OtherActor);
+		if(ShooterCharacter)
+		{
+			ShooterCharacter -> IncrementOverlappedItemCount(-1);
+		}
+	}
+}
+
 
 // Called every frame
 void AItem::Tick(float DeltaTime)

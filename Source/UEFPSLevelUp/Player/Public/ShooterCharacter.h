@@ -76,6 +76,12 @@ protected:
 	 * 射线检索拾取物体
 	 */
 	bool TraceUnderCrosshair(FHitResult& OutHitResult , FVector& OutHitLocation);
+
+	
+	/**
+	 * 当重叠Item>0时
+	 */
+	void  TraceForItems();
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -91,6 +97,16 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	float GetCrosshairSpreadMultiplier() const;
+	
+	FORCEINLINE int8 GetOverlappedItemCount() const {return OverlappedItemCount;}
+
+	
+	/**
+	 * 增加或者减少重叠Item数量
+	 * @param Amount 增加或减少数量
+	 */
+	void IncrementOverlappedItemCount(int8 Amount);
+	
 
 private:
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Camera , meta = (AllowPrivateAccess = "true"))
@@ -191,4 +207,10 @@ private:
 	float AutomaticFireRate;
 
 	FTimerHandle AutoFireTimer;
+	/**
+	 * 是否追踪物体
+	 */
+	bool bShouldTraceForItems;
+
+	int8 OverlappedItemCount;
 };

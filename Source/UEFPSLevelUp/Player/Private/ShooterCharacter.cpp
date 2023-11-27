@@ -45,7 +45,9 @@ AShooterCharacter::AShooterCharacter():
 //枪的射击间隔
 	AutomaticFireRate(0.1f),
 	bShouldFire(true),
-	bFireButtonPress(false)
+	bFireButtonPress(false),
+//追踪物体
+	bShouldTraceForItems(false)
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -132,17 +134,8 @@ void AShooterCharacter::Tick(float DeltaTime)
 
 	CalculateCrosshairSpread(DeltaTime);
 
-	FHitResult ItemTraceResult;
-	FVector HitLocation;
-	TraceUnderCrosshair(ItemTraceResult , HitLocation);
-	if(ItemTraceResult.bBlockingHit)
-	{
-		AItem* HitItem = Cast<AItem>(ItemTraceResult.GetActor());
-		if(HitItem && HitItem -> GetPickupWidget())
-		{
-			HitItem -> GetPickupWidget() -> SetVisibility(true);
-		}
-	}
+	TraceForItems();
+
 }
 
 // Called to bind functionality to input
@@ -174,6 +167,20 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 float AShooterCharacter::GetCrosshairSpreadMultiplier() const
 {
 	return CrosshairSpreadMultiplier;
+}
+
+void AShooterCharacter::IncrementOverlappedItemCount(int8 Amount)
+{
+	if(OverlappedItemCount + Amount <= 0)
+	{
+		OverlappedItemCount = 0;
+		bShouldTraceForItems = false;
+	}
+	else
+	{
+		OverlappedItemCount += Amount;
+		bShouldTraceForItems = true;
+	}
 }
 
 void AShooterCharacter::TurnAtRate(float Rate)
@@ -426,4 +433,23 @@ bool AShooterCharacter::TraceUnderCrosshair(FHitResult& OutHitResult , FVector& 
 		}
 	}
 	return false;
+}
+
+void AShooterCharacter::TraceForItems()
+{
+	if(bShouldTraceForItems)
+	{
+		FHitResult ItemTraceResult;
+		FVector HitLocation;
+		TraceUnderCrosshair(ItemTraceResult , HitLocation);
+		if(ItemTraceResult.bBlockingHit)
+		{
+			AItem* HitItem = Cast<AItem>(ItemTraceResult.GetActor());
+			if(HitItem && HitItem -> GetPickupWidget())
+			{
+				HitItem -> GetPickupWidget() -> SetVisibility(true);
+			}
+		}
+	}
+	
 }
