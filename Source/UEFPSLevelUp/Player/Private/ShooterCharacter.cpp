@@ -17,22 +17,22 @@
 AShooterCharacter::AShooterCharacter():
 	BaseTurnRate(45.f),
 	BaseLookUpRate(45.f),
-	bAiming(false),
+	HipTurnRate(90.f),
 //相机
+	HipLookUpRate(90.f),
+	AimingTurnRate(20.f),
+	AimingLookUpRate(20.f),
+	MouseHipTurnRate(1.0f),
+//开镜关镜上下左右移动速度
+	MouseHipLookUpRate(1.0f),
+	MouseAimingTurnRate(1.0f),
+	MouseAimingLookUpRate(1.0f),
+	bAiming(false),
+//开镜关镜鼠标移动速度
 	CameraDefaultFOV(0.f),
 	CameraZoomedFOV(60.f),
 	CameraCurrentFOV(0.f),
 	ZoomInterpSpeed(20.f),
-//开镜关镜上下左右移动速度
-	HipTurnRate(90.f),
-	HipLookUpRate(90.f),
-	AimingTurnRate(20.f),
-	AimingLookUpRate(20.f),
-//开镜关镜鼠标移动速度
-	MouseHipTurnRate(1.0f),
-	MouseHipLookUpRate(1.0f),
-	MouseAimingTurnRate(1.0f),
-	MouseAimingLookUpRate(1.0f),
 //瞄准分散因素
 	CrosshairSpreadMultiplier(0.f),
 	CrosshairVelocityFactor(0.f),
@@ -43,9 +43,9 @@ AShooterCharacter::AShooterCharacter():
 	ShootTimeDuration(0.05f),
 	bFiringBullet(false),
 //枪的射击间隔
-	AutomaticFireRate(0.1f),
-	bShouldFire(true),
 	bFireButtonPress(false),
+	bShouldFire(true),
+	AutomaticFireRate(0.1f),
 //追踪物体
 	bShouldTraceForItems(false)
 {
@@ -449,7 +449,22 @@ void AShooterCharacter::TraceForItems()
 			{
 				HitItem -> GetPickupWidget() -> SetVisibility(true);
 			}
+
+			//取消未选中物体UI显示
+			if(TraceHitItemLastFrame)
+			{
+				if(HitItem != TraceHitItemLastFrame)
+				{
+					TraceHitItemLastFrame -> GetPickupWidget() -> SetVisibility(false);
+				}
+			}
+			TraceHitItemLastFrame = HitItem;
 		}
+	}
+	else if(TraceHitItemLastFrame)
+	{
+		//没有选中物体
+		TraceHitItemLastFrame -> GetPickupWidget() -> SetVisibility(false);
 	}
 	
 }

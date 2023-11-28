@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "ShooterCharacter.generated.h"
 
+class AItem;
 class USoundCue;
 class UCameraComponent;
 class USpringArmComponent;
@@ -213,4 +214,11 @@ private:
 	bool bShouldTraceForItems;
 
 	int8 OverlappedItemCount;
+
+	
+	/**
+	 * 最后一帧选中的物体
+	 */
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Items , meta = (AllowPrivateAccess = "true"))
+	AItem* TraceHitItemLastFrame;
 };

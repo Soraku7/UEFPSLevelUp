@@ -59,6 +59,19 @@ private:
 	 */
 	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = "Item Properties" , meta = (AllowPrivateAccess = "true"))
 	USphereComponent* AreaSphere;
+
+	/**
+	 * 物品名字
+	 */
+	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = "Item Propertier" , meta = (AllowPrivateAccess = "true"))
+	FString ItemName;
+
+	
+	/**
+	 * 物体数量
+	 */
+	UPROPERTY(EditAnywhere , BlueprintReadWrite , Category = "Item Propertier" , meta = (AllowPrivateAccess = "true"))
+	int32 ItemCount;
 public:
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const {return PickupWidget;};
 
