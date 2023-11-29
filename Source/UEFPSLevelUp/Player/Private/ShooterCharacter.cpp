@@ -3,6 +3,8 @@
 
 #include "UEFPSLevelUp/Player/Public/ShooterCharacter.h"
 #include "Camera/CameraComponent.h"
+#include "Components/BoxComponent.h"
+#include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -11,6 +13,7 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
 #include "UEFPSLevelUp/Item/Public/Item.h"
+#include "UEFPSLevelUp/Item/Public/Weapon.h"
 
 
 // Sets default values
@@ -84,6 +87,7 @@ void AShooterCharacter::BeginPlay()
 		CameraDefaultFOV = GetFollowCamera() -> FieldOfView;
 		CameraCurrentFOV = CameraDefaultFOV;
 	}
+	EquipWeapon(SpawnDefaultWeapon());
 }
 
 void AShooterCharacter::MoveForward(float value)
@@ -262,7 +266,7 @@ bool AShooterCharacter::GetBeamEndLocation(
 	FHitResult WeaponTraceHit;
 	const FVector WeaponTraceStart{MuzzleSocketLocation};
 	const FVector StartToEnd{OutBeamLocation - MuzzleSocketLocation};
-	const FVector WeaponTraceEnd{OutBeamLocation + StartToEnd * 1.25f};
+	const FVector WeaponTraceEnd{MuzzleSocketLocation + StartToEnd * 1.25f};
 	GetWorld() -> LineTraceSingleByChannel(WeaponTraceHit , WeaponTraceStart , WeaponTraceEnd , ECC_Visibility);
 	if(WeaponTraceHit.bBlockingHit)
 	{
@@ -467,4 +471,31 @@ void AShooterCharacter::TraceForItems()
 		TraceHitItemLastFrame -> GetPickupWidget() -> SetVisibility(false);
 	}
 	
+}
+
+AWeapon* AShooterCharacter::SpawnDefaultWeapon()
+{
+	if(DefaultWeaponClass)
+	{
+		return GetWorld() -> SpawnActor<AWeapon>(DefaultWeaponClass);
+	}
+	return nullptr;
+}
+
+void AShooterCharacter::EquipWeapon(AWeapon* WeaponToEquip)
+{
+	if(WeaponToEquip)
+	{
+		//忽略所有碰撞
+		WeaponToEquip -> GetAreaSphere() -> SetCollisionResponseToAllChannels(ECR_Ignore);
+		WeaponToEquip -> GetCollisionBox() -> SetCollisionResponseToAllChannels(ECR_Ignore);
+
+		const USkeletalMeshSocket* HansSocket = GetMesh() -> GetSocketByName(FName("RightHandSocket"));
+
+		if(HansSocket)
+		{
+			HansSocket -> AttachActor(WeaponToEquip , GetMesh());
+		}
+		EquippedWeapon = WeaponToEquip;
+	}
 }

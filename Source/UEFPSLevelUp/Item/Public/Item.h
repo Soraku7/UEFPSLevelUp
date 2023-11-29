@@ -102,6 +102,9 @@ private:
 	TArray<bool> ActiveStars;
 	
 public:
-	FORCEINLINE UWidgetComponent* GetPickupWidget() const {return PickupWidget;};
+	FORCEINLINE UWidgetComponent* GetPickupWidget() const {return PickupWidget;}
+	
+	FORCEINLINE USphereComponent* GetAreaSphere() const {return AreaSphere;}
 
+	FORCEINLINE UBoxComponent* GetCollisionBox() const {return CollisionBox;}
 };

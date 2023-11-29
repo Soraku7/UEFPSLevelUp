@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "ShooterCharacter.generated.h"
 
+class AWeapon;
 class AItem;
 class USoundCue;
 class UCameraComponent;
@@ -83,6 +84,14 @@ protected:
 	 * 当重叠Item>0时
 	 */
 	void  TraceForItems();
+
+	AWeapon* SpawnDefaultWeapon();
+
+	
+	/**
+	 * 装备武器
+	 */
+	void EquipWeapon(AWeapon* WeaponToEquip);
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -221,4 +230,17 @@ private:
 	 */
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Items , meta = (AllowPrivateAccess = "true"))
 	AItem* TraceHitItemLastFrame;
+
+	/**
+	 * 装备的武器
+	 */
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Combat , meta = (AllowPrivateAccess = "true"))
+	AWeapon* EquippedWeapon;
+
+	
+	/**
+	 * 武器蓝图
+	 */
+	UPROPERTY(EditDefaultsOnly , BlueprintReadOnly , Category = Combat , meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AWeapon> DefaultWeaponClass;
 };
