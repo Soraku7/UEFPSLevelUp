@@ -166,6 +166,8 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent -> BindAction("AimingButton" , IE_Pressed , this , &AShooterCharacter::AimingButtonPressed);
 	PlayerInputComponent -> BindAction("AimingButton" , IE_Released , this , &AShooterCharacter::AimingButtonReleased);
 
+	PlayerInputComponent -> BindAction("Select" , IE_Pressed , this , &AShooterCharacter::SelectButtonPressed);
+	PlayerInputComponent -> BindAction("Select" , IE_Released , this , &AShooterCharacter::SelectButtonReleased);
 }
 
 float AShooterCharacter::GetCrosshairSpreadMultiplier() const
@@ -486,9 +488,6 @@ void AShooterCharacter::EquipWeapon(AWeapon* WeaponToEquip)
 {
 	if(WeaponToEquip)
 	{
-		//忽略所有碰撞
-		WeaponToEquip -> GetAreaSphere() -> SetCollisionResponseToAllChannels(ECR_Ignore);
-		WeaponToEquip -> GetCollisionBox() -> SetCollisionResponseToAllChannels(ECR_Ignore);
 
 		const USkeletalMeshSocket* HansSocket = GetMesh() -> GetSocketByName(FName("RightHandSocket"));
 
@@ -497,5 +496,26 @@ void AShooterCharacter::EquipWeapon(AWeapon* WeaponToEquip)
 			HansSocket -> AttachActor(WeaponToEquip , GetMesh());
 		}
 		EquippedWeapon = WeaponToEquip;
+		EquippedWeapon -> SetItemState(EItemState::EIS_Equipped);
 	}
+}
+
+void AShooterCharacter::DropWeapon()     
+{
+	
+	if(EquippedWeapon)
+	{
+		//分离组件
+		FDetachmentTransformRules DetachmentTransformRules(EDetachmentRule::KeepWorld , true);
+		EquippedWeapon -> GetItemMesh() -> DetachFromComponent(DetachmentTransformRules);
+	}
+}
+
+void AShooterCharacter::SelectButtonPressed()
+{
+	DropWeapon();
+}
+
+void AShooterCharacter::SelectButtonReleased()
+{
 }

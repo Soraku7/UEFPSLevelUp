@@ -92,6 +92,14 @@ protected:
 	 * 装备武器
 	 */
 	void EquipWeapon(AWeapon* WeaponToEquip);
+	
+	/**
+	 * 丢落武器
+	 */
+	void DropWeapon();
+
+	void SelectButtonPressed();
+	void SelectButtonReleased();
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

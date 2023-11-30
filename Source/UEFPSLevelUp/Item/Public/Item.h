@@ -22,7 +22,18 @@ enum class EItemRarity : uint8
 	EIR_MAX UMETA(Display = "DefaultMAX")
 
 };
+UENUM(BlueprintType)
+enum class EItemState : uint8
+{
+	EIS_Pickup UMETA(DisplayName = "Pickup"),
+	EIS_EquipInterping UMETA(DisplayName = "EquipInterping"),
+	EIS_PickedUp UMETA(DisplayName = "PickedUp"),
+	EIS_Equipped UMETA(Display = "Equipped"),
+	EIS_Falling UMETA(Display = "Falling"),
 
+	EIS_MAX UMETA(DisplayName = "DefaultMAX")
+
+};
 UCLASS()
 class UEFPSLEVELUP_API AItem : public AActor
 {
@@ -55,6 +66,12 @@ protected:
 	 * 设置物品稀有度
 	 */
 	void SetActiveStars();
+
+	/**
+	 * 设置物品状态
+	 * @param State 
+	 */
+	void SetItemProperties(EItemState State);
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -100,6 +117,12 @@ private:
 
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Item Propertier" , meta = (AllowPrivateAccess = "true"))
 	TArray<bool> ActiveStars;
+
+	/**
+	 * Item状态
+	 */
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Item Propertier" , meta = (AllowPrivateAccess = "true"))
+	EItemState ItemState;
 	
 public:
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const {return PickupWidget;}
@@ -107,4 +130,11 @@ public:
 	FORCEINLINE USphereComponent* GetAreaSphere() const {return AreaSphere;}
 
 	FORCEINLINE UBoxComponent* GetCollisionBox() const {return CollisionBox;}
+
+	FORCEINLINE EItemState GetItemState() const {return ItemState;}
+
+	void SetItemState(EItemState State);
+
+	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const {return ItemMesh;}
+
 };
