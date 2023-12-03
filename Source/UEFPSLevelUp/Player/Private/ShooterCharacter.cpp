@@ -450,21 +450,21 @@ void AShooterCharacter::TraceForItems()
 		TraceUnderCrosshair(ItemTraceResult , HitLocation);
 		if(ItemTraceResult.bBlockingHit)
 		{
-			AItem* HitItem = Cast<AItem>(ItemTraceResult.GetActor());
-			if(HitItem && HitItem -> GetPickupWidget())
+			TraceHitItem = Cast<AItem>(ItemTraceResult.GetActor());
+			if(TraceHitItem && TraceHitItem -> GetPickupWidget())
 			{
-				HitItem -> GetPickupWidget() -> SetVisibility(true);
+				TraceHitItem -> GetPickupWidget() -> SetVisibility(true);
 			}
 
 			//取消未选中物体UI显示
 			if(TraceHitItemLastFrame)
 			{
-				if(HitItem != TraceHitItemLastFrame)
+				if(TraceHitItem != TraceHitItemLastFrame)
 				{
 					TraceHitItemLastFrame -> GetPickupWidget() -> SetVisibility(false);
 				}
 			}
-			TraceHitItemLastFrame = HitItem;
+			TraceHitItemLastFrame = TraceHitItem;
 		}
 	}
 	else if(TraceHitItemLastFrame)
@@ -516,9 +516,22 @@ void AShooterCharacter::DropWeapon()
 
 void AShooterCharacter::SelectButtonPressed()
 {
-	DropWeapon();
+	if(TraceHitItem)
+	{
+		auto TraceHitWeapon = Cast<AWeapon>(TraceHitItem);
+		SwapWeapon(TraceHitWeapon);
+		TraceHitItem = nullptr;
+		TraceHitItemLastFrame = nullptr;
+	}
+	
 }
 
 void AShooterCharacter::SelectButtonReleased()
 {
+}
+
+void AShooterCharacter::SwapWeapon(AWeapon* WeaponToSwap)
+{
+	DropWeapon();
+	EquipWeapon(WeaponToSwap);
 }

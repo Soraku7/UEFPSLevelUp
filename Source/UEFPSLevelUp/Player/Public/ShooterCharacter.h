@@ -100,6 +100,12 @@ protected:
 
 	void SelectButtonPressed();
 	void SelectButtonReleased();
+
+	/**
+	 * 丢弃当前武器并替换
+	 * @param WeaponToSwap 
+	 */
+	void SwapWeapon(AWeapon* WeaponToSwap);
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -251,4 +257,10 @@ private:
 	 */
 	UPROPERTY(EditDefaultsOnly , BlueprintReadOnly , Category = Combat , meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AWeapon> DefaultWeaponClass;
+
+	/**
+	 * 追踪选中物体
+	 */
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Combat , meta = (AllowPrivateAccess = "true"))
+	AItem* TraceHitItem;
 };
