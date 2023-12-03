@@ -508,6 +508,9 @@ void AShooterCharacter::DropWeapon()
 		//分离组件
 		FDetachmentTransformRules DetachmentTransformRules(EDetachmentRule::KeepWorld , true);
 		EquippedWeapon -> GetItemMesh() -> DetachFromComponent(DetachmentTransformRules);
+
+		EquippedWeapon -> SetItemState(EItemState::EIS_Falling);
+		EquippedWeapon -> ThrowWeapon();
 	}
 }
 
