@@ -131,7 +131,9 @@ public:
 	 */
 	void IncrementOverlappedItemCount(int8 Amount);
 	
+	FVector GetCameraInterpLocation();
 
+	void GetPickupItem(AItem* Item);
 private:
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Camera , meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
@@ -263,4 +265,17 @@ private:
 	 */
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = Combat , meta = (AllowPrivateAccess = "true"))
 	AItem* TraceHitItem;
+
+	
+	/**
+	 * 距离相机距离
+	 */
+	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = Items , meta = (AllowPrivateAccess = "true"))
+	float CameraInterpDistance;
+	
+	/**
+	 * 距离相机仰角
+	 */
+	UPROPERTY(EditAnywhere , BlueprintReadOnly , Category = Items , meta = (AllowPrivateAccess = "true"))
+	float CameraInterpElevation;
 };

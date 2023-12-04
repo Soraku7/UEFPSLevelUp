@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Item.generated.h"
 
+class AShooterCharacter;
 class USphereComponent;
 class UWidgetComponent;
 class UBoxComponent;
@@ -72,6 +73,8 @@ protected:
 	 * @param State 
 	 */
 	void SetItemProperties(EItemState State);
+
+	void FinishInterping();
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -123,7 +126,48 @@ private:
 	 */
 	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Item Propertier" , meta = (AllowPrivateAccess = "true"))
 	EItemState ItemState;
+
 	
+	/**
+	 * 物品拾取Z轴曲线
+	 */
+	UPROPERTY(EditDefaultsOnly , BlueprintReadOnly , Category = "Item Propertier" , meta = (AllowPrivateAccess = "true"))
+	UCurveFloat* ItemZCurve;
+
+	
+	/**
+	 * 物品开始线性插值位置
+	 */
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Item Propertier" , meta = (AllowPrivateAccess = "true"))
+	FVector ItemInterpStartLocation;
+
+	/**
+	 * 线性插值目标位置
+	 */
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Item Propertier" , meta = (AllowPrivateAccess = "true"))
+	FVector CameraTargetLocation;
+
+	
+	/**
+	 * 正在做线性插值
+	 */
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Item Propertier" , meta = (AllowPrivateAccess = "true"))
+	bool bInterping;
+
+	
+	/**
+	 * 曲线时间
+	 */
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Item Propertier" , meta = (AllowPrivateAccess = "true"))
+	float ZCurveTime;
+	
+	/**
+	 * 开始做线性插值时启用
+	 */
+	FTimerHandle ItemInterpTimer;
+	
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Item Propertier" , meta = (AllowPrivateAccess = "true"))
+	AShooterCharacter* Character;
 public:
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const {return PickupWidget;}
 	
@@ -137,4 +181,5 @@ public:
 
 	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const {return ItemMesh;}
 
+	void StartItemCurve(AShooterCharacter* Char);
 };
