@@ -5,6 +5,7 @@
 
 #include "IDetailTreeNode.h"
 #include "VectorUtil.h"
+#include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
@@ -23,7 +24,8 @@ AItem::AItem():
 	CameraTargetLocation(FVector(0.f)),
 	bInterping(false),
 	ItemInterpX(0.f),
-	ItemInterpY(0.f)
+	ItemInterpY(0.f),
+	InterpInitialYawOffset(0.f)
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -198,6 +200,7 @@ void AItem::FinishInterping()
 	{
 		Character -> GetPickupItem(this);
 	}
+	SetActorScale3D(FVector(1.f));
 }
 
 void AItem::ItemInterp(float DeltaTime)
@@ -226,6 +229,16 @@ void AItem::ItemInterp(float DeltaTime)
 		
 		ItemLocation.Z += CurveValue * DeltaZ;
 		SetActorLocation(ItemLocation , true , nullptr , ETeleportType::TeleportPhysics);
+
+		const FRotator CameraRotation{Character -> GetFollowCamera() -> GetComponentRotation()};
+		FRotator ItemRotation{0.f , CameraRotation.Yaw + InterpInitialYawOffset , 0.f};
+		SetActorRotation(ItemRotation , ETeleportType::TeleportPhysics);
+
+		if(ItemScaleCurve)
+		{
+			const float ScaleCurveValue = ItemScaleCurve -> GetFloatValue(ElapsedTime);
+			SetActorScale3D(FVector(ScaleCurveValue , ScaleCurveValue , ScaleCurveValue));
+		}
 	}
 }
 
@@ -252,5 +265,10 @@ void AItem::StartItemCurve(AShooterCharacter* Char)
 	SetItemState(EItemState::EIS_EquipInterping);
 
 	GetWorldTimerManager().SetTimer(ItemInterpTimer , this , &AItem::FinishInterping , ZCurveTime);
+
+	const double CameraRotationYaw{Character -> GetFollowCamera() -> GetComponentRotation().Yaw};
+	const double ItemRotationYaw{GetActorRotation().Yaw};
+
+	InterpInitialYawOffset = ItemRotationYaw - CameraRotationYaw;
 }
 

@@ -160,7 +160,7 @@ private:
 	/**
 	 * 曲线时间
 	 */
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , Category = "Item Propertier" , meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly , BlueprintReadOnly , Category = "Item Propertier" , meta = (AllowPrivateAccess = "true"))
 	float ZCurveTime;
 	
 	/**
@@ -173,6 +173,15 @@ private:
 
 	float ItemInterpX;
 	float ItemInterpY;
+
+	float InterpInitialYawOffset;
+
+	
+	/**
+	 * 物品Scale变化曲线
+	 */
+	UPROPERTY(EditDefaultsOnly , BlueprintReadOnly , Category = "Item Propertier" , meta = (AllowPrivateAccess = "true"))
+	UCurveFloat* ItemScaleCurve;
 public:
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const {return PickupWidget;}
 	
