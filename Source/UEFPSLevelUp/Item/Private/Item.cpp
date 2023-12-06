@@ -3,6 +3,7 @@
 
 #include "UEFPSLevelUp/Item/Public/Item.h"
 
+#include "IDetailTreeNode.h"
 #include "VectorUtil.h"
 #include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
@@ -20,7 +21,9 @@ AItem::AItem():
 	ZCurveTime(0.7f),
 	ItemInterpStartLocation(FVector(0.f)),
 	CameraTargetLocation(FVector(0.f)),
-	bInterping(false)
+	bInterping(false),
+	ItemInterpX(0.f),
+	ItemInterpY(0.f)
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -169,14 +172,60 @@ void AItem::SetItemProperties(EItemState State)
 		CollisionBox -> SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 		break;
+	case EItemState::EIS_EquipInterping:
+		PickupWidget -> SetVisibility(false);
+		
+		ItemMesh -> SetSimulatePhysics(false);
+		ItemMesh -> SetEnableGravity(false);
+		ItemMesh -> SetVisibility(true);
+		ItemMesh -> SetCollisionResponseToAllChannels(ECR_Ignore);
+		ItemMesh -> SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		AreaSphere -> SetCollisionResponseToAllChannels(ECR_Ignore);
+		AreaSphere -> SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		
+		CollisionBox -> SetCollisionResponseToAllChannels(ECR_Ignore);
+		CollisionBox -> SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		
+		break;
 	}
 }
 
 void AItem::FinishInterping()
 {
+	bInterping = false;
 	if(Character)
 	{
 		Character -> GetPickupItem(this);
+	}
+}
+
+void AItem::ItemInterp(float DeltaTime)
+{
+	if(!bInterping) return;
+
+	if(Character && ItemZCurve)
+	{
+		//计时器启动后的剩余时间
+		const float ElapsedTime = GetWorldTimerManager().GetTimerElapsed(ItemInterpTimer);
+		const float CurveValue = ItemZCurve -> GetFloatValue(ElapsedTime);
+
+		FVector ItemLocation = ItemInterpStartLocation;
+		const FVector CameraInterpLocation{Character -> GetCameraInterpLocation()};
+		const FVector ItemToCamera{FVector(0.f , 0.f , (CameraInterpLocation - ItemLocation).Z)};
+	
+		const float DeltaZ = ItemToCamera.Size();
+
+		//物体XY轴线性插值
+		const FVector CurrentLocation{GetActorLocation()};
+		const float InterpXValue = FMath::FInterpTo(CurrentLocation.X , CameraInterpLocation.X , DeltaTime , 30.f);
+		const float InterpYValue = FMath::FInterpTo(CurrentLocation.Y , CameraInterpLocation.Y , DeltaTime , 30.f);
+
+		ItemLocation.X = InterpXValue;
+		ItemLocation.Y = InterpYValue;
+		
+		ItemLocation.Z += CurveValue * DeltaZ;
+		SetActorLocation(ItemLocation , true , nullptr , ETeleportType::TeleportPhysics);
 	}
 }
 
@@ -185,6 +234,7 @@ void AItem::FinishInterping()
 void AItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	ItemInterp(DeltaTime);
 }
 
 void AItem::SetItemState(EItemState State)

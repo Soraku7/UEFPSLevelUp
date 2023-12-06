@@ -524,7 +524,6 @@ void AShooterCharacter::EquipWeapon(AWeapon* WeaponToEquip)
 
 void AShooterCharacter::DropWeapon()     
 {
-	
 	if(EquippedWeapon)
 	{
 		//分离组件
@@ -540,10 +539,7 @@ void AShooterCharacter::SelectButtonPressed()
 {
 	if(TraceHitItem)
 	{
-		auto TraceHitWeapon = Cast<AWeapon>(TraceHitItem);
-		SwapWeapon(TraceHitWeapon);
-		TraceHitItem = nullptr;
-		TraceHitItemLastFrame = nullptr;
+		TraceHitItem -> StartItemCurve(this);
 	}
 }
 
